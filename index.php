@@ -1,50 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/main.css">
-    <title>Document</title>
-</head>
-<body>
-<form action="insert.php" method="POST">
-    <?php
-    $con=mysqli_connect("localhost", "root", "", "todolist");
-    if (mysqli_connect_errno())
-    {
-    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+
+<?php
+require('model/database.php');
+require('model/items.php');
+require('model/category.php');
+
+$item_num = filter_input(INPUT_POST, 'item_num', FILTER_VALIDATE_INT);
+$description = filter_input(INPUT_POST, 'description', FILTER_UNSAFE_RAW);
+$title = filter_input(INPUT_POST, 'title', FILTER_UNSAFE_RAW);
+
+$category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
+if(!$category_id) {
+    $category_id = filter_input(INPUT_GET, 'category_id', FILTER_VALIDATE_INT);
+}
+$category_name = filter_input(INPUT_POST, 'category_name', FILTER_UNSAFE_RAW);
+if(!$category_name) {
+    $category_name = filter_input(INPUT_GET, 'category_name', FILTER_UNSAFE_RAW);
+}
+
+
+
+$action = filter_input(INPUT_POST, 'action', FILTER_UNSAFE_RAW);
+if(!$action) {
+    $action = filter_input(INPUT_GET, 'action', FILTER_UNSAFE_RAW);
+    if (!$action) {
+        $action = 'list_todos';
     }
-    
-    $result = mysqli_query($con,"SELECT * FROM todoitems");
-   if(!$row = mysqli_fetch_array($result)){
-       echo "<h1>No Items in List</h1><br>";   
 }
-else{
-    echo '<table>
-    <tr ><div id="title">
-    To Do List
-    </div>
-    </tr>';
-    do{
-        echo "<tr>";
-        echo "<td><h2>" . $row['Title'] . "</h2>\n<h3>". $row['Description'] . 
-        '</h3></td>';
-        echo '<td id="delete"><button type="submit" text = "Check Off" name="deleteItem" value="'.$row['ItemNum'].'" />Delete</button>';
-        echo "</tr>";
+
+switch ($action) {
+    case "list_categories":
+        $categories = get_categories();
+        include('view/category_list.php');
+        break;
+    case "add_category":
+        if($category_name){
+        add_category($category_name);
+        } else{
+            $error = "Invalid category name. Check and try again.";
+            include('view/error.php');
         }
-    while($row = mysqli_fetch_array($result));
-    
-    echo "</table>";
-    mysqli_close($con);
+        header("Location: .?action=list_categories");
+        break;
+    case "add_todo":
+        if($category_id && $title && $description){
+            add_item($category_id, $title, $description);
+            header("Location: .?category_id=$category_id");
+        } else {
+            $error = "Invalid todo data. Check and try again.";
+            include('view/error.php');
+            exit();
+        }
+    case "delete_category":
+        if($category_id){
+            try{
+                delete_category($category_id);
+            }catch (PDOException $e){
+                $error = "Cannot delete a category if items exist in the category.";
+                include('view/error.php');
+                exit();
+            }
+            header("Location: .?action=list_categories");
+        }
+        break;
+    case "delete_todo":
+        if($item_num){
+            delete_item($item_num);
+            header("Location: .?category_id=$category_id");
+        } else {
+            $error = "Missing or incorrect Item Num.";
+        }
+
+    default:
+        $category_name = get_category_name($category_id);
+        $categories = get_categories();
+        $todos = get_items_by_category($category_id);
+        include('view/to_do_list.php');
 }
-    ?>
-    </form>
-    <form action="insert.php" method="POST">
-    <h2>Add Item</h2>     
-    Title:<br><input type="text" name = "title" id="Title" /><br/>
-    Dscription:<br> <input type="text" name = "description" id="Description" /><br/>
-        <input type="submit"/>
-</form>
-</body>
-</html>
+
+?>
