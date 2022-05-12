@@ -7,3 +7,7 @@
 .bold{
     font-weight: bold;
 }
+
+tr {
+    padding: 10%;
+}

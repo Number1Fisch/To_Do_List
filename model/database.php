@@ -1,5 +1,5 @@
 <?php
-$dsn = 'mysql: host=localhost; dbname=todolist';
+$dsn = 'mysql: host=localhost; dbname=zippyusedautos';
 $username = 'root';
 try{
 $conn=new PDO($dsn, $username);

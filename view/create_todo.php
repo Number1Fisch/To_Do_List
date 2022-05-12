@@ -4,25 +4,28 @@
     <?php
    
     $result = mysqli_query($conn,"SELECT * FROM todoitems");
-   if(!$row = mysqli_fetch_array($result)){
-       echo "<h1>No Items in List</h1><br>";   
-}
-else{
-    echo '<table>
+   if(!$row = mysqli_fetch_array($result)){?>
+       <h1>No Items in List</h1><br>  
+<?php } 
+else{ ?>
+    <table>
     <tr ><div id="listTitle">
     To Do List
     </div>
-    </tr>';
-    do{
-        echo "<tr>";
-        echo "<td><h2>" . $row['Title'] . "</h2>\n<h3>". $row['Description'] . 
-        '</h3></td>';
-        echo '<td id="delete"><button type="submit" text = "Check Off" name="deleteItem" value="'.$row['ItemNum'].'" />Delete</button>';
-        echo "</tr>";
-        }
-    while($row = mysqli_fetch_array($result));
+    </tr>
+    <?php do{ ?>
+        <tr>
+        <td><h2><?=$row['Title']?></h2>
+        <br>
+        <h3><?=$row['Description']?>
+        </h3></td>
+        <td id="delete"><button type="submit" text = "Check Off" name="deleteItem" value=<?=$row['ItemNum']?>>Delete</button>
+        </tr>
+        <?php } 
+    while($row = mysqli_fetch_array($result));?>
     
-    echo "</table>";
+    </table>
+   <?php 
     mysqli_close($conn);
 }
     ?>

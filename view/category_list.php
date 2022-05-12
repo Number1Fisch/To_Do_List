@@ -1,5 +1,5 @@
 <?php include('view/header.php') ?>
-<?php if($categories) {?>
+<?php if($vehicles) {?>
     <section id="list" class= "list">
         <header class= "list_header">
             <h1>
